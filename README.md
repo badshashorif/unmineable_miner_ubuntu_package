@@ -58,6 +58,44 @@ Ctrl + A then D
 
 Coming soon as `miner.service` systemd unit.
 
+
+## ✅ নতুন সংযোজনসমূহ:
+
+### 1. 🛠️ `unmineable-miner.service` (systemd auto-start)
+
+Linux boot হলেই miner চালু হবে।
+
+**ইনস্টল করার নিয়ম:**
+
+```bash
+sudo cp unmineable-miner.service /etc/systemd/system/
+sudo systemctl daemon-reexec
+sudo systemctl enable unmineable-miner
+sudo systemctl start unmineable-miner
+```
+
+---
+
+### 2. 📲 `notify_telegram.sh` (Telegram Alert Script)
+
+Mining শুরু হলে Telegram এ নোটিফিকেশন যাবে।
+
+**ব্যবহারের নিয়ম:**
+
+1. `BOT_TOKEN` আর `CHAT_ID` সেট করুন
+2. রান করুন:
+
+```bash
+bash notify_telegram.sh
+```
+
+---
+
+### 3. ⚡ `GPU_SUPPORT.md` (NVIDIA/AMD miner config)
+
+Unmineable-এর জন্য NBMiner বা T-Rex দিয়ে কিভাবে GPU miner চালাবেন — সেটার বিস্তারিত।
+
+
 ---
 
 ## 🧑‍💻 Created Badsha Faysal
