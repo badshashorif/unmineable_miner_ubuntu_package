@@ -1,0 +1,13 @@
+[Unit]
+Description=Unmineable CPU Miner Service
+After=network.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/root/xmrig-6.21.1
+ExecStart=/root/xmrig-6.21.1/start.sh
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
