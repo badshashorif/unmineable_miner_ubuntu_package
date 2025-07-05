@@ -1,0 +1,59 @@
+#!/bin/bash
+
+# ---------------------------
+# Unmineable CPU Miner Setup (No systemd)
+# By Badsha Faysal
+# ---------------------------
+
+# === CONFIGURATION ===
+WALLET="bnb:0x8bc6e382f7f3fa5e9b8dc1c7d12704649eb63d1c.TEST_2#ref=nksi-ouwo"
+THREADS=20
+XM_VERSION="6.21.1"
+INSTALL_DIR="/root/xmrig-$XM_VERSION"
+
+echo "[+] Updating system and installing dependencies..."
+sudo apt update && sudo apt install -y curl tar screen msr-tools cpufrequtils
+
+echo "[+] Enabling HugePages..."
+echo 'vm.nr_hugepages=128' | sudo tee -a /etc/sysctl.conf
+sudo sysctl -p
+
+echo "[+] Setting CPU to performance mode..."
+echo 'GOVERNOR="performance"' | sudo tee /etc/default/cpufrequtils
+sudo systemctl disable ondemand 2>/dev/null || true
+sudo systemctl enable cpufrequtils
+sudo systemctl start cpufrequtils
+
+echo "[+] Enabling MSR tweak for Intel CPU (if available)..."
+sudo modprobe msr
+sudo wrmsr -a 0x1a4 0xf || echo "Skipping MSR tweak (probably non-Intel)"
+
+echo "[+] Downloading XMRig v$XM_VERSION..."
+curl -L -o xmrig.tar.gz https://github.com/xmrig/xmrig/releases/download/v$XM_VERSION/xmrig-$XM_VERSION-linux-x64.tar.gz
+tar -xvf xmrig.tar.gz
+mv xmrig-$XM_VERSION "$INSTALL_DIR"
+
+echo "[+] Creating start script..."
+cat <<EOF > $INSTALL_DIR/start.sh
+#!/bin/bash
+cd $INSTALL_DIR
+./xmrig -a rx -o rx.unmineable.com:3333 -u $WALLET -p x --threads=$THREADS --huge-pages
+EOF
+
+chmod +x $INSTALL_DIR/start.sh
+chmod +x $INSTALL_DIR/xmrig
+
+echo "[+] Creating miner launch via screen..."
+cat <<EOF > /root/start_miner.sh
+#!/bin/bash
+screen -dmS miner $INSTALL_DIR/start.sh
+EOF
+
+chmod +x /root/start_miner.sh
+
+echo "[+] Adding cronjob to auto-start miner on reboot..."
+(crontab -l 2>/dev/null; echo "@reboot /root/start_miner.sh") | crontab -
+
+echo "[✔] Installation complete!"
+echo "🔄 Miner will auto-start on reboot."
+echo "🖥️ To see miner output: screen -r miner"
